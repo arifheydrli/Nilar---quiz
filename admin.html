@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NilAr Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#2563EB;--blue-dark:#1E3A5F;--blue-light:#EFF6FF;--gold:#F59E0B;--green:#22C55E;--red:#EF4444;--gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-400:#94A3B8;--gray-600:#475569;--white:#fff}
+body{font-family:'Inter',sans-serif;background:var(--gray-50);color:#0F172A;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--blue-dark),var(--blue))}
+.login-box{background:white;border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.2)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-family:'Sora',sans-serif;font-size:28px;color:var(--blue-dark)}
+.login-logo p{font-size:13px;color:var(--gray-400);margin-top:4px}
+.inp{width:100%;padding:12px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;margin-bottom:14px;outline:none;transition:border .2s}
+.inp:focus{border-color:var(--blue)}
+.btn-login{width:100%;padding:13px;background:var(--blue);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+.btn-login:hover{background:#1D4ED8}
+.login-err{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+
+/* ADMIN LAYOUT */
+.admin-wrap{display:none;min-height:100vh}
+.sidebar{width:240px;background:var(--blue-dark);min-height:100vh;position:fixed;top:0;left:0;padding:20px 0}
+.sidebar-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:16px}
+.sidebar-logo h2{font-family:'Sora',sans-serif;color:white;font-size:20px}
+.sidebar-logo span{font-size:11px;color:rgba(255,255,255,.5)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:12px 20px;color:rgba(255,255,255,.7);cursor:pointer;transition:all .2s;font-size:14px;font-weight:500}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:white}
+.nav-item span{font-size:18px}
+.main{margin-left:240px;padding:28px}
+
+/* HEADER */
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.admin-header h1{font-family:'Sora',sans-serif;font-size:24px;color:var(--blue-dark)}
+.admin-header p{font-size:13px;color:var(--gray-400)}
+.btn-logout{padding:8px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:white;color:var(--gray-600)}
+.btn-logout:hover{background:var(--gray-50)}
+.btn-refresh{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:var(--blue);color:white;margin-right:8px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:white;border-radius:14px;padding:20px;border:1px solid #E2E8F0}
+.stat-card .num{font-family:'Sora',sans-serif;font-size:32px;font-weight:800;margin-bottom:4px}
+.stat-card .lbl{font-size:13px;color:var(--gray-400)}
+.stat-blue .num{color:var(--blue)}
+.stat-green .num{color:var(--green)}
+.stat-gold .num{color:var(--gold)}
+.stat-red .num{color:var(--red)}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;margin-bottom:20px;width:fit-content}
+.tab{padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:white;color:var(--gray-600);transition:all .2s}
+.tab.active{background:var(--blue);color:white}
+
+/* TABLE */
+.table-wrap{background:white;border-radius:14px;border:1px solid #E2E8F0;overflow:hidden}
+.table-header{padding:16px 20px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between}
+.table-header h3{font-size:15px;font-weight:700;color:var(--blue-dark)}
+.search-inp{padding:8px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;width:200px}
+.search-inp:focus{border-color:var(--blue)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-400);background:var(--gray-50);border-bottom:1px solid #E2E8F0}
+td{padding:13px 16px;font-size:13px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray-50)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700}
+.badge-green{background:#DCFCE7;color:#166534}
+.badge-gold{background:#FEF3C7;color:#92400E}
+.badge-gray{background:var(--gray-100);color:var(--gray-600)}
+.badge-red{background:#FEF2F2;color:#DC2626}
+.btn-approve{padding:5px 12px;border:none;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer}
+.btn-approve:hover{background:#16A34A}
+.btn-reject{padding:5px 12px;border:none;border-radius:6px;background:var(--red);color:white;font-size:12px;font-weight:700;cursor:pointer;margin-left:4px}
+.empty{text-align:center;padding:48px;color:var(--gray-400);font-size:14px}
+.loading{text-align:center;padding:40px;color:var(--gray-400)}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{width:100%;min-height:auto;position:relative;display:flex;flex-direction:row;flex-wrap:wrap;padding:10px}
+  .sidebar-logo{border-bottom:none;margin-bottom:0;padding:8px 12px}
+  .nav-item{padding:8px 12px;font-size:12px}
+  .main{margin-left:0;padding:16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .admin-wrap{flex-direction:column}
+  table{font-size:12px}
+  th,td{padding:8px 10px}
+  .search-inp{width:140px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>NilAr Admin</h1>
+      <p>İdarəetmə paneli</p>
+    </div>
+    <div class="login-err" id="loginErr">Parol yanlışdır!</div>
+    <input class="inp" type="text" id="adminUser" placeholder="İstifadəçi adı" />
+    <input class="inp" type="password" id="adminPass" placeholder="Parol" onkeydown="if(event.key==='Enter')doAdminLogin()" />
+    <button class="btn-login" onclick="doAdminLogin()">Daxil ol</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h2>NilAr</h2>
+      <span>Admin Panel</span>
+    </div>
+    <div class="nav-item active" onclick="showTab('users')"><span>👥</span> İstifadəçilər</div>
+    <div class="nav-item" onclick="showTab('payments')"><span>💳</span> Ödənişlər</div>
+    <div class="nav-item" onclick="showTab('stats')"><span>📊</span> Statistika</div>
+  </div>
+  <div class="main">
+    <div class="admin-header">
+      <div>
+        <h1 id="pageTitle">İstifadəçilər</h1>
+        <p id="pageSubtitle">Qeydiyyatdan keçmiş istifadəçilər</p>
+      </div>
+      <div>
+        <button class="btn-refresh" onclick="loadData()">↻ Yenilə</button>
+        <button class="btn-logout" onclick="doAdminLogout()">Çıxış</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card stat-blue"><div class="num" id="statUsers">—</div><div class="lbl">Qeydiyyatlı istifadəçi</div></div>
+      <div class="stat-card stat-green"><div class="num" id="statPremium">—</div><div class="lbl">Premium üzv</div></div>
+      <div class="stat-card stat-gold"><div class="num" id="statPending">—</div><div class="lbl">Gözləyən ödəniş</div></div>
+      <div class="stat-card stat-red"><div class="num" id="statToday">—</div><div class="lbl">Bu gün qeydiyyat</div></div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div id="usersTab">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>İstifadəçilər siyahısı</h3>
+          <input class="search-inp" type="text" placeholder="Axtar..." oninput="filterTable('usersTbl',this.value)" />
+        </div>
+        <div id="usersContent"><div class="loading">Yüklənir...</div></div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS TAB -->
+    <div id="paymentsTab" style="display:none">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Ödənişlər siyahısı</h3>
+          <input class="search-inp" type="text" placeholder="Axtar..." oninput="filterTable('paymentsTbl',this.value)" />
+        </div>
+        <div id="paymentsContent"><div class="loading">Yüklənir...</div></div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="statsTab" style="display:none">
+      <div class="table-wrap" style="padding:28px">
+        <h3 style="margin-bottom:16px;color:var(--blue-dark)">Son fəaliyyət</h3>
+        <div id="statsContent"><div class="loading">Yüklənir...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://vavwvmtbxkoewvqrdzlv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_uIS2RLQCp86es79FGjQPYA_zVKIKcGT";
+const ADMIN_USER = "nilar";
+const ADMIN_PASS = "NilAr2026Admin!";
+
+async function sbGet(table, query="") {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}&order=created_at.desc`, {
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
+  });
+  return res.json();
+}
+
+async function sbPatch(table, id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: "PATCH",
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+function doAdminLogin() {
+  const u = document.getElementById("adminUser").value.trim();
+  const p = document.getElementById("adminPass").value;
+  if(u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById("loginWrap").style.display = "none";
+    document.getElementById("adminWrap").style.display = "flex";
+    loadData();
+  } else {
+    document.getElementById("loginErr").style.display = "block";
+  }
+}
+
+function doAdminLogout() {
+  document.getElementById("loginWrap").style.display = "flex";
+  document.getElementById("adminWrap").style.display = "none";
+  document.getElementById("adminUser").value = "";
+  document.getElementById("adminPass").value = "";
+}
+
+function showTab(tab) {
+  ["users","payments","stats"].forEach(t => {
+    document.getElementById(t+"Tab").style.display = t===tab ? "block" : "none";
+  });
+  document.querySelectorAll(".nav-item").forEach((el,i) => {
+    el.classList.toggle("active", ["users","payments","stats"][i] === tab);
+  });
+  const titles = { users: ["İstifadəçilər","Qeydiyyatdan keçmiş istifadəçilər"], payments: ["Ödənişlər","WhatsApp vasitəsilə göndərilən ödənişlər"], stats: ["Statistika","Ümumi fəaliyyət məlumatları"] };
+  document.getElementById("pageTitle").textContent = titles[tab][0];
+  document.getElementById("pageSubtitle").textContent = titles[tab][1];
+}
+
+async function loadData() {
+  const [users, payments] = await Promise.all([
+    sbGet("users", "select=*"),
+    sbGet("payments", "select=*")
+  ]);
+
+  // Stats
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("statUsers").textContent = users.length || 0;
+  document.getElementById("statPremium").textContent = users.filter(u=>u.premium).length || 0;
+  document.getElementById("statPending").textContent = payments.filter(p=>p.status==="pending").length || 0;
+  document.getElementById("statToday").textContent = users.filter(u=>u.created_at?.startsWith(today)).length || 0;
+
+  // Users table
+  if(!users.length) {
+    document.getElementById("usersContent").innerHTML = '<div class="empty">Hələ heç bir istifadəçi yoxdur</div>';
+  } else {
+    document.getElementById("usersContent").innerHTML = `
+      <table id="usersTbl">
+        <thead><tr><th>#</th><th>Ad</th><th>Telefon</th><th>Status</th><th>Qeydiyyat tarixi</th><th>Əməliyyat</th></tr></thead>
+        <tbody>${users.map((u,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${u.name}</strong></td>
+            <td>${u.phone}</td>
+            <td>${u.premium ? '<span class="badge badge-green">✦ Premium</span>' : '<span class="badge badge-gray">Pulsuz</span>'}</td>
+            <td>${u.created_at ? new Date(u.created_at).toLocaleString("az-AZ") : "—"}</td>
+            <td>
+              ${!u.premium ? `<button class="btn-approve" onclick="makePremium('${u.id}')">Premium et</button>` : `<button class="btn-reject" onclick="removePremium('${u.id}')">Ləğv et</button>`}
+            </td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
+
+  // Payments table
+  if(!payments.length) {
+    document.getElementById("paymentsContent").innerHTML = '<div class="empty">Hələ heç bir ödəniş yoxdur</div>';
+  } else {
+    document.getElementById("paymentsContent").innerHTML = `
+      <table id="paymentsTbl">
+        <thead><tr><th>#</th><th>Ad</th><th>Telefon</th><th>Kart (son 4)</th><th>Məbləğ</th><th>Status</th><th>Tarix</th><th>Əməliyyat</th></tr></thead>
+        <tbody>${payments.map((p,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${p.user_name||"—"}</strong></td>
+            <td>${p.user_phone||"—"}</td>
+            <td>**** ${p.card_last4||"—"}</td>
+            <td><strong>${p.amount||15} ₼</strong></td>
+            <td>${p.status==="approved" ? '<span class="badge badge-green">✓ Təsdiqləndi</span>' : p.status==="rejected" ? '<span class="badge badge-red">✗ Rədd edildi</span>' : '<span class="badge badge-gold">⏳ Gözləyir</span>'}</td>
+            <td>${p.created_at ? new Date(p.created_at).toLocaleString("az-AZ") : "—"}</td>
+            <td>
+              ${p.status==="pending" ? `
+                <button class="btn-approve" onclick="approvePayment('${p.id}','${p.user_id}')">Təsdiqlə</button>
+                <button class="btn-reject" onclick="rejectPayment('${p.id}')">Rədd et</button>` : "—"}
+            </td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
+
+  // Stats tab
+  document.getElementById("statsContent").innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="padding:16px;background:var(--blue-light);border-radius:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--blue-dark);margin-bottom:8px">📊 İstifadəçi statistikası</div>
+        <div style="font-size:13px;color:var(--gray-600)">Cəmi: <strong>${users.length}</strong></div>
+        <div style="font-size:13px;color:var(--gray-600)">Premium: <strong>${users.filter(u=>u.premium).length}</strong></div>
+        <div style="font-size:13px;color:var(--gray-600)">Pulsuz: <strong>${users.filter(u=>!u.premium).length}</strong></div>
+      </div>
+      <div style="padding:16px;background:#DCFCE7;border-radius:12px">
+        <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:8px">💰 Ödəniş statistikası</div>
+        <div style="font-size:13px;color:var(--gray-600)">Cəmi: <strong>${payments.length}</strong></div>
+        <div style="font-size:13px;color:var(--gray-600)">Təsdiqlənmiş: <strong>${payments.filter(p=>p.status==="approved").length}</strong></div>
+        <div style="font-size:13px;color:var(--gray-600)">Gözləyən: <strong>${payments.filter(p=>p.status==="pending").length}</strong></div>
+        <div style="font-size:13px;color:var(--gray-600)">Gəlir: <strong>${payments.filter(p=>p.status==="approved").reduce((s,p)=>s+(p.amount||15),0)} ₼</strong></div>
+      </div>
+    </div>`;
+}
+
+async function makePremium(userId) {
+  await sbPatch("users", userId, { premium: true });
+  loadData();
+}
+
+async function removePremium(userId) {
+  await sbPatch("users", userId, { premium: false });
+  loadData();
+}
+
+async function approvePayment(payId, userId) {
+  await sbPatch("payments", payId, { status: "approved" });
+  if(userId) await sbPatch("users", userId, { premium: true });
+  alert("✅ Ödəniş təsdiqləndi, istifadəçi Premium edildi!");
+  loadData();
+}
+
+async function rejectPayment(payId) {
+  await sbPatch("payments", payId, { status: "rejected" });
+  loadData();
+}
+
+function filterTable(tableId, query) {
+  const tbl = document.getElementById(tableId);
+  if(!tbl) return;
+  const q = query.toLowerCase();
+  tbl.querySelectorAll("tbody tr").forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+</script>
+</body>
+</html>
